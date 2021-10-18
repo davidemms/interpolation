@@ -13,7 +13,11 @@ class Interpolator(object):
         Args:
             fn_input - input filename
         Returns:
-            data - list of lists of floats/None for present/absent data
+            None
+        Post-condition:
+            Data member self.data contains list of lists of input data with None
+            representing 'nan'. Otherwise, raises an Exception, e, if file is incorrectly 
+            formatted with srt(e) describing the error. 
         """
         with open(fn_input, 'r') as infile:
             reader = csv.reader(infile)
@@ -30,6 +34,44 @@ class Interpolator(object):
                             raise Exception("ERROR: unexpected text in input file: '%s'" % str(value))
 
 
+    def write_interpolated(self, fn_output):
+        """
+        Write the interpolated data to CSV
+        Args:
+            fn_output - output filename
+        Returns:
+            None
+        Post-condition:
+            Interpolated data is written to file. 
+        """
+        new_data = [[self._get_value(i, j) if value is None else value for j, value in enumerate(row)] for i, row in enumerate(self.data)]
+        with open(fn_output, 'w') as outfile:
+            writer = csv.writer(outfile)
+            writer.writerows(new_data)
+
+    
+    def _get_value(self, i, j):
+        """
+        Get (i,j)-th value if present otherwise average
+        Args:
+            data - n x m list of lists of numbers/None
+            i - outer index in [0,n)
+            j - inner index in [0,m)
+        Returns:
+            x - the value to use for the (i,j)-th entry or None if (i,j) invalid
+        """
+        m = len(self.data)
+        n = len(self.data[0])
+        if i >= m or j >= n:
+            return None
+        if self.data[i][j] is None:
+            indices = [(i+di, j+dj) for di, dj in [[0, -1], [0,1], [-1,0], [1,0]]]
+            values = [self.data[x][y] for x,y in indices if 0<=x<m and 0<=y<n and self.data[x][y] is not None]
+            return sum(values)/float(len(values))
+        else:
+            return self.data[i][j]
+
+
 def main(fn_input, fn_output):
     """
     Interpolate values in csv file
@@ -41,8 +83,9 @@ def main(fn_input, fn_output):
     """
     # read file
     try:
-        inter = Interpolator(fn_input)
-        inter.interpolate(fn_output)
+        inter = Interpolator()
+        inter.read_file(fn_input)
+        inter.write_interpolated(fn_output)
     except Exception as e:
         print(str(e))
         print("Exiting...")
