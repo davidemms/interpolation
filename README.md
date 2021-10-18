@@ -7,7 +7,7 @@ Python 3
 
 # Usage
 ```
-python interpolation.py input_filename output_filename
+python interpolator.py input_filename output_filename
 ```
 
 # Tests

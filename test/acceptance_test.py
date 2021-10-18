@@ -8,7 +8,8 @@ import tempfile
 import filecmp
 
 
-d_data = os.path.dirname(__file__) + os.sep + ".." + os.sep + "data" + os.sep
+d_project = os.path.dirname(__file__) + os.sep + ".." + os.sep 
+d_data = d_project + "data" + os.sep
 
 class TestInterpolation_Acceptance(unittest.TestCase):
     def test_provided_example(self):
@@ -17,7 +18,8 @@ class TestInterpolation_Acceptance(unittest.TestCase):
             os.remove(fn_output)
 
         fn_input = d_data + "input_test_data.csv"
-        subprocess.call(["python3", "-m", "interpolator.interpolator", fn_input, fn_output])
+        # subprocess.call(["python3", "-m", "interpolator.interpolator", fn_input, fn_output])  
+        subprocess.call(["python3", "interpolator/interpolator.py", fn_input, fn_output], cwd=d_project)
         fn_exp = "data/interpolated_test_data.csv"
 
         self.assertTrue(os.path.exists(fn_output))
