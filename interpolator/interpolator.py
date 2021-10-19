@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+import os
 import sys
 import csv
 import argparse
@@ -19,6 +19,8 @@ class Interpolator(object):
             representing 'nan'. Otherwise, raises an Exception, e, if file is incorrectly 
             formatted with srt(e) describing the error. 
         """
+        if not os.path.exists(fn_input):
+            raise Exception("ERROR: Input file does not exist: %s" % fn_input)
         with open(fn_input, 'r') as infile:
             reader = csv.reader(infile)
             self.data = []
@@ -45,9 +47,13 @@ class Interpolator(object):
             Interpolated data is written to file. 
         """
         new_data = [[self._get_value(i, j) if value is None else value for j, value in enumerate(row)] for i, row in enumerate(self.data)]
-        with open(fn_output, 'w') as outfile:
-            writer = csv.writer(outfile)
-            writer.writerows(new_data)
+        try:
+            with open(fn_output, 'w') as outfile:
+                writer = csv.writer(outfile)
+                writer.writerows(new_data)
+        except OSError:
+            raise Exception("ERROR: Cannot write to output file: %s" % fn_output)
+
 
     
     def _get_value(self, i, j):

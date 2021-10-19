@@ -216,5 +216,27 @@ class TestInterpolator(unittest.TestCase):
             self.assertTrue("ERROR: Input contains adjacent missing values" in str(context.exception))
 
 
+    def test_handle_missing_input(self):
+        with tempfile.TemporaryDirectory() as dir_test:
+            # read in some data
+            fn_input = dir_test + os.sep + "data.csv"
+            fn_output = dir_test + os.sep + "data.out.csv"
+        with self.assertRaises(Exception) as context:
+            interp.main(fn_input, fn_output)
+        self.assertTrue("ERROR: Input file does not exist" in str(context.exception))
+
+
+    def test_handle_unwritable_output(self):
+        with tempfile.TemporaryDirectory() as dir_test:
+            # read in some data
+            fn_input = dir_test + os.sep + "data.csv"
+            fn_output = "/path/that/doesnt/exist/foo.txt"
+            with open(fn_input, 'w') as outfile:
+                outfile.write("1,2,3\n")
+            with self.assertRaises(Exception) as context:
+                interp.main(fn_input, fn_output)
+            self.assertTrue("ERROR: Cannot write to output file" in str(context.exception))
+
+
 if __name__ == '__main__':
     unittest.main()
