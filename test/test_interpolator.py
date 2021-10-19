@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os
+import csv
 import tempfile
 import unittest
 
@@ -12,7 +13,7 @@ class TestInterpolator(unittest.TestCase):
         with tempfile.TemporaryDirectory() as dir_test:
             # arrange
             fn = dir_test + os.sep + "data.csv"
-            with open(fn, 'w') as outfile:
+            with open(fn, 'w', newline='') as outfile:
                 outfile.write("7.5,9.1\n")
                 outfile.write("3.2,1.5\n")
         
@@ -30,7 +31,7 @@ class TestInterpolator(unittest.TestCase):
         with tempfile.TemporaryDirectory() as dir_test:
             # arrange
             fn = dir_test + os.sep + "data.csv"
-            with open(fn, 'w') as outfile:
+            with open(fn, 'w', newline='') as outfile:
                 outfile.write("1,2,3\n")
                 outfile.write("4,5,6\n")
                 outfile.write("7,8,9\n")
@@ -51,7 +52,7 @@ class TestInterpolator(unittest.TestCase):
         with tempfile.TemporaryDirectory() as dir_test:
             # arrange
             fn = dir_test + os.sep + "data.csv"
-            with open(fn, 'w') as outfile:
+            with open(fn, 'w', newline='') as outfile:
                 outfile.write("1,nan\n")
                 outfile.write("nan,2\n")
                 outfile.write("3,4\n")
@@ -72,7 +73,7 @@ class TestInterpolator(unittest.TestCase):
         with tempfile.TemporaryDirectory() as dir_test:
             # arrange
             fn = dir_test + os.sep + "data.csv"
-            with open(fn, 'w') as outfile:
+            with open(fn, 'w', newline='') as outfile:
                 outfile.write("1,other\n")
                 outfile.write("nan,2\n")
         
@@ -87,10 +88,11 @@ class TestInterpolator(unittest.TestCase):
         with tempfile.TemporaryDirectory() as dir_test:
             # read in some data
             fn = dir_test + os.sep + "data.csv"
-            with open(fn, 'w') as outfile:
-                outfile.write("1,2,3\n")
-                outfile.write("4,nan,6\n")
-                outfile.write("7,8,nan\n")
+            with open(fn, 'wt', newline='') as outfile:
+                writer = csv.writer(outfile)
+                writer.writerow([1,2,3])
+                writer.writerow([4,'nan',6])
+                writer.writerow([7,8,'nan'])
             x = interp.Interpolator()
             x.read_file(fn)
 
@@ -99,10 +101,10 @@ class TestInterpolator(unittest.TestCase):
             x.write_interpolated(fn_out)
 
             # nan should be replaced with interpolated values
-            with open(fn_out, 'r') as infile:
-                self.assertEqual("1.0,2.0,3.0\n", next(infile))
-                self.assertEqual("4.0,5.0,6.0\n", next(infile))
-                self.assertEqual("7.0,8.0,7.0\n", next(infile))
+            with open(fn_out, 'r', newline='') as infile:
+                self.assertEqual("1.0,2.0,3.0", next(infile).rstrip())
+                self.assertEqual("4.0,5.0,6.0", next(infile).rstrip())
+                self.assertEqual("7.0,8.0,7.0", next(infile).rstrip())
                 # no more lines if file
                 with self.assertRaises(StopIteration) as context:
                     next(infile)
@@ -111,7 +113,7 @@ class TestInterpolator(unittest.TestCase):
         with tempfile.TemporaryDirectory() as dir_test:
             # read in some data
             fn = dir_test + os.sep + "data.csv"
-            with open(fn, 'w') as outfile:
+            with open(fn, 'w', newline='') as outfile:
                 outfile.write("1e7,20000,nan\n")
                 outfile.write("4e7,nan,10000\n")
             x = interp.Interpolator()
@@ -120,17 +122,17 @@ class TestInterpolator(unittest.TestCase):
             fn_out = dir_test + os.sep + "data.out.csv"
             x.write_interpolated(fn_out)
 
-            with open(fn_out, 'r') as infile:
-                self.assertEqual("10000000.0,20000.0,15000.0\n", next(infile))
+            with open(fn_out, 'r', newline='') as infile:
+                self.assertEqual("10000000.0,20000.0,15000.0", next(infile).rstrip())
                 # precise formatting is not important, but test that values were read and 
                 # calculated correctly
-                self.assertEqual("40000000.0,13343333.333333334,10000.0\n", next(infile))
+                self.assertEqual("40000000.0,13343333.333333334,10000.0", next(infile).rstrip())
 
     def test_write_interpolated_scientific_notation_in_and_out(self):
         with tempfile.TemporaryDirectory() as dir_test:
             # read in some data
             fn = dir_test + os.sep + "data.csv"
-            with open(fn, 'w') as outfile:
+            with open(fn, 'w', newline='') as outfile:
                 outfile.write("1e20,nan,2e20\n")
             x = interp.Interpolator()
             x.read_file(fn)
@@ -138,11 +140,11 @@ class TestInterpolator(unittest.TestCase):
             fn_out = dir_test + os.sep + "data.out.csv"
             x.write_interpolated(fn_out)
 
-            with open(fn_out, 'r') as infile:
+            with open(fn_out, 'r', newline='') as infile:
                 # could read in again and check numeric values if precise formatting 
                 # has any system dependencies. For now, just check values are correct, 
                 # can improve flexibility of test if required.
-                self.assertEqual("1e+20,1.5e+20,2e+20\n", next(infile))
+                self.assertEqual("1e+20,1.5e+20,2e+20", next(infile).rstrip())
     
     def test_get_value_single_line(self):
         x = interp.Interpolator()
@@ -207,7 +209,7 @@ class TestInterpolator(unittest.TestCase):
         with tempfile.TemporaryDirectory() as dir_test:
             # read in some data
             fn_input = dir_test + os.sep + "data.csv"
-            with open(fn_input, 'w') as outfile:
+            with open(fn_input, 'w', newline='') as outfile:
                 outfile.write("nan,nan,3\n")
             fn_output = dir_test + os.sep + "data.out.csv"
                 
@@ -231,7 +233,7 @@ class TestInterpolator(unittest.TestCase):
             # read in some data
             fn_input = dir_test + os.sep + "data.csv"
             fn_output = "/path/that/doesnt/exist/foo.txt"
-            with open(fn_input, 'w') as outfile:
+            with open(fn_input, 'w', newline='') as outfile:
                 outfile.write("1,2,3\n")
             with self.assertRaises(Exception) as context:
                 interp.main(fn_input, fn_output)

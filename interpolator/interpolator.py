@@ -21,7 +21,7 @@ class Interpolator(object):
         """
         if not os.path.exists(fn_input):
             raise Exception("ERROR: Input file does not exist: %s" % fn_input)
-        with open(fn_input, 'r') as infile:
+        with open(fn_input, 'rt', newline='') as infile:
             reader = csv.reader(infile)
             self.data = []
             for row in reader:
@@ -48,7 +48,7 @@ class Interpolator(object):
         """
         new_data = [[self._get_value(i, j) if value is None else value for j, value in enumerate(row)] for i, row in enumerate(self.data)]
         try:
-            with open(fn_output, 'w') as outfile:
+            with open(fn_output, 'wt', newline='') as outfile:
                 writer = csv.writer(outfile)
                 writer.writerows(new_data)
         except OSError:
