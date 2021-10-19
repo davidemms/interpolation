@@ -7,16 +7,16 @@ Python 3
 
 # Usage
 ```
-python interpolator.py input_filename output_filename
+python3 interpolator.py input_filename output_filename
 ```
 
 # Tests
 Unit tests:
 ```
-python -m unittest test.test_interpolation
+python3 -m unittest test.test_interpolator
 ```
 
 Acceptance tests:
 ```
-python -m unittest test.acceptance_test
+python3 -m unittest test.acceptance_test
 ```
