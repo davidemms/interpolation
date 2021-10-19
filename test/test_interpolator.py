@@ -193,5 +193,28 @@ class TestInterpolator(unittest.TestCase):
         self.assertTrue(x._get_value(2, 0) is None)
 
 
+    def test_get_value_adjacent_missing_values(self):
+        x = interp.Interpolator()
+        x.data = [[1, None, None],]
+        self.assertEqual(1, x._get_value(0, 0))
+        with self.assertRaises(Exception) as context:
+            x._get_value(0, 1)
+        with self.assertRaises(Exception) as context:
+            x._get_value(0, 2)
+
+
+    def test_handle_adjacent_missing_values(self):
+        with tempfile.TemporaryDirectory() as dir_test:
+            # read in some data
+            fn_input = dir_test + os.sep + "data.csv"
+            with open(fn_input, 'w') as outfile:
+                outfile.write("nan,nan,3\n")
+            fn_output = dir_test + os.sep + "data.out.csv"
+                
+            with self.assertRaises(Exception) as context:
+                interp.main(fn_input, fn_output)
+            self.assertTrue("ERROR: Input contains adjacent missing values" in str(context.exception))
+
+
 if __name__ == '__main__':
     unittest.main()

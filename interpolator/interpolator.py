@@ -66,7 +66,9 @@ class Interpolator(object):
             return None
         if self.data[i][j] is None:
             indices = [(i+di, j+dj) for di, dj in [[0, -1], [0,1], [-1,0], [1,0]]]
-            values = [self.data[x][y] for x,y in indices if 0<=x<m and 0<=y<n and self.data[x][y] is not None]
+            values = [self.data[x][y] for x,y in indices if 0<=x<m and 0<=y<n]
+            if any(v is None for v in values):
+                raise Exception("ERROR: Input contains adjacent missing values")
             return sum(values)/float(len(values))
         else:
             return self.data[i][j]
@@ -82,19 +84,19 @@ def main(fn_input, fn_output):
         None
     """
     # read file
+    inter = Interpolator()
+    inter.read_file(fn_input)
+    inter.write_interpolated(fn_output)
+
+
+if __name__ == "__main__":
     try:
-        inter = Interpolator()
-        inter.read_file(fn_input)
-        inter.write_interpolated(fn_output)
+        parser = argparse.ArgumentParser(description="Interpolate 'nan' values in a CSV file.")
+        parser.add_argument("input", help="Input CSV filename")
+        parser.add_argument("output", help="Input CSV filename")
+        args = parser.parse_args()
+        main(args.input, args.output)
     except Exception as e:
         print(str(e))
         print("Exiting...")
         sys.exit(1)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Interpolate 'nan' values in a CSV file.")
-    parser.add_argument("input", help="Input CSV filename")
-    parser.add_argument("output", help="Input CSV filename")
-    args = parser.parse_args()
-    main(args.input, args.output)
